@@ -62,13 +62,13 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user }) {
+      // Initialize providerTokens if it doesn't exist
+      if (!token.providerTokens) {
+        token.providerTokens = {};
+      }
+
       // On initial sign-in or when a new account is linked
       if (account && user) {
-        // Initialize providerTokens if it doesn't exist
-        if (!token.providerTokens) {
-          token.providerTokens = {};
-        }
-
         // Store the current provider's details
         token.providerTokens[account.provider] = {
           access_token: account.access_token!,
