@@ -10,8 +10,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  const isSpotifyConnected = session?.user?.spotify;
-  const isGoogleConnected = session?.user?.google;
+  const isSpotifyConnected = session?.user?.providerTokens?.spotify;
+  const isGoogleConnected = session?.user?.providerTokens?.google;
 
   const handleTransfer = async () => {
     setIsLoading(true);
@@ -37,14 +37,13 @@ export default function Home() {
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-900 text-white">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold mb-4">Playlist Transfer</h1>
+        <h1 className="text-5xl font-bold mb-4">Playlist TransferJ</h1>
         <p className="text-xl text-gray-400">
           Transfer your Spotify playlists to YouTube seamlessly.
         </p>
