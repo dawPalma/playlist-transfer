@@ -29,23 +29,28 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user }) {
+      // On initial sign-in or when a new account is linked
       if (account && user) {
-        // Store provider tokens directly on the token object
+        // Create a new token object by spreading the existing token
+        // and then adding/updating the provider-specific data
+        const newToken = { ...token };
+
         if (account.provider === "spotify") {
-          token.spotify = {
+          newToken.spotify = {
             access_token: account.access_token!,
             refresh_token: account.refresh_token,
             expires_at: account.expires_at,
           };
         } else if (account.provider === "google") {
-          token.google = {
+          newToken.google = {
             access_token: account.access_token!,
             refresh_token: account.refresh_token,
             expires_at: account.expires_at,
           };
         }
+        return newToken; // Return the new token object
       }
-      return token;
+      return token; // If no account, return the existing token
     },
     async session({ session, token }) {
       // Expose provider tokens to the session
