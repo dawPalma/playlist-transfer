@@ -3,39 +3,6 @@ import SpotifyProvider from "next-auth/providers/spotify"
 import GoogleProvider from "next-auth/providers/google"
 import { JWT } from "next-auth/jwt"
 
-// Extend the JWT type to include provider tokens
-declare module "next-auth/jwt" {
-  interface JWT {
-    providerTokens?: {
-      [key: string]: {
-        access_token: string;
-        refresh_token?: string;
-        expires_at?: number;
-        id?: string;
-      };
-    };
-  }
-}
-
-// Extend the Session type to include providerTokens
-declare module "next-auth" {
-  interface Session {
-    user: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      providerTokens?: {
-        [key: string]: {
-          access_token: string;
-          refresh_token?: string;
-          expires_at?: number;
-          id?: string;
-        };
-      };
-    };
-  }
-}
-
 export const authOptions: AuthOptions = {
   providers: [
     SpotifyProvider({
@@ -62,30 +29,28 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user }) {
-      // Ensure providerTokens is an object
-      token.providerTokens = token.providerTokens || {};
-
-      // On initial sign-in or when a new account is linked
       if (account && user) {
-        // Merge existing providerTokens with the new account's tokens
-        token.providerTokens = {
-          ...(token.providerTokens as object), // Explicitly spread existing tokens
-          [account.provider]: { // Add or update the current provider's token
+        // Store provider tokens directly on the token object
+        if (account.provider === "spotify") {
+          token.spotify = {
             access_token: account.access_token!,
             refresh_token: account.refresh_token,
             expires_at: account.expires_at,
-            id: user.id,
-          },
-        };
+          };
+        } else if (account.provider === "google") {
+          token.google = {
+            access_token: account.access_token!,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+          };
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      // Expose the providerTokens to the session
-      session.user = {
-        ...session.user,
-        providerTokens: token.providerTokens,
-      };
+      // Expose provider tokens to the session
+      session.user.spotify = token.spotify;
+      session.user.google = token.google;
       return session;
     },
   },

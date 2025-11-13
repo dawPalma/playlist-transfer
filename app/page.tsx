@@ -10,8 +10,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  const isSpotifyConnected = session?.user?.providerTokens?.spotify;
-  const isGoogleConnected = session?.user?.providerTokens?.google;
+  const isSpotifyConnected = session?.user?.spotify;
+  const isGoogleConnected = session?.user?.google;
 
   const handleTransfer = async () => {
     setIsLoading(true);
