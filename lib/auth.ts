@@ -62,19 +62,20 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user }) {
-      // Initialize providerTokens if it doesn't exist
-      if (!token.providerTokens) {
-        token.providerTokens = {};
-      }
+      // Ensure providerTokens is an object
+      token.providerTokens = token.providerTokens || {};
 
       // On initial sign-in or when a new account is linked
       if (account && user) {
-        // Store the current provider's details
-        token.providerTokens[account.provider] = {
-          access_token: account.access_token!,
-          refresh_token: account.refresh_token,
-          expires_at: account.expires_at,
-          id: user.id,
+        // Merge existing providerTokens with the new account's tokens
+        token.providerTokens = {
+          ...(token.providerTokens as object), // Explicitly spread existing tokens
+          [account.provider]: { // Add or update the current provider's token
+            access_token: account.access_token!,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+            id: user.id,
+          },
         };
       }
       return token;
