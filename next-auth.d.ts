@@ -37,11 +37,13 @@ declare module "next-auth/jwt" {
       access_token?: string;
       refresh_token?: string;
       expires_at?: number;
+      id?: string;
     };
     google?: {
       access_token?: string;
       refresh_token?: string;
       expires_at?: number;
+      id?: string;
     };
   }
 }

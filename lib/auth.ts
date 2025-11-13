@@ -40,12 +40,14 @@ export const authOptions: AuthOptions = {
             access_token: account.access_token!,
             refresh_token: account.refresh_token,
             expires_at: account.expires_at,
+            id: user.id,
           };
         } else if (account.provider === "google") {
           newToken.google = {
             access_token: account.access_token!,
             refresh_token: account.refresh_token,
             expires_at: account.expires_at,
+            id: user.id,
           };
         }
         return newToken; // Return the new token object
