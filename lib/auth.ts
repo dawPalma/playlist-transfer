@@ -1,6 +1,40 @@
-import { AuthOptions } from "next-auth"
+import { AuthOptions, Session } from "next-auth"
 import SpotifyProvider from "next-auth/providers/spotify"
 import GoogleProvider from "next-auth/providers/google"
+import { JWT } from "next-auth/jwt"
+
+// Extend the JWT type to include provider tokens
+declare module "next-auth/jwt" {
+  interface JWT {
+    providerTokens?: {
+      [key: string]: {
+        access_token: string;
+        refresh_token?: string;
+        expires_at?: number;
+        id?: string;
+      };
+    };
+  }
+}
+
+// Extend the Session type to include providerTokens
+declare module "next-auth" {
+  interface Session {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      providerTokens?: {
+        [key: string]: {
+          access_token: string;
+          refresh_token?: string;
+          expires_at?: number;
+          id?: string;
+        };
+      };
+    };
+  }
+}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -27,22 +61,34 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      // On sign-in, persist the access token from the provider
-      if (account) {
-        token[account.provider] = {
-          access_token: account.access_token,
+    async jwt({ token, account, user }) {
+      // On initial sign-in or when a new account is linked
+      if (account && user) {
+        // Initialize providerTokens if it doesn't exist
+        if (!token.providerTokens) {
+          token.providerTokens = {};
+        }
+
+        // Store the current provider's details
+        token.providerTokens[account.provider] = {
+          access_token: account.access_token!,
           refresh_token: account.refresh_token,
           expires_at: account.expires_at,
+          id: user.id,
         };
       }
       return token;
     },
     async session({ session, token }) {
-      // The token now contains objects for each provider
-      // You can selectively expose what you need to the client
-      session.user = token;
+      // Expose the providerTokens to the session
+      session.user = {
+        ...session.user,
+        providerTokens: token.providerTokens,
+      };
       return session;
     },
+  },
+  session: {
+    strategy: "jwt",
   },
 };
